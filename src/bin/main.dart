@@ -11,5 +11,6 @@ import 'dart:io';
 import 'package:src/support.dart' as support;
 
 void main(List<String> args) {
+  print(support.getConfigFile(appName: 'gpx_utils'));
   exit(0);
 }
