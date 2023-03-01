@@ -9,8 +9,10 @@
 // *******************************************************************************************
 import 'dart:io';
 import 'package:src/support.dart' as support;
+import 'package:src/configfile.dart' as cfg;
 
 void main(List<String> args) {
-  print(support.getConfigFile(appName: 'gpx_utils'));
+  final cfg.ConfigFile config = cfg.ConfigFile(support.getConfigFile(appName: 'gpx_utils'));
+  print(config.toString());
   exit(0);
 }
