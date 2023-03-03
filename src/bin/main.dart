@@ -9,8 +9,9 @@
 // *******************************************************************************************
 import 'dart:io' as io;
 import 'package:args/args.dart' as args;
-import 'package:src/support.dart' as support;
-import 'package:src/configfile.dart' as cfg;
+// import 'package:src/support.dart' as support;
+// import 'package:src/configfile.dart' as cfg;
+import 'package:src/gpxfile.dart' as gpx;
 
 args.ArgParser getArgsParser() {
   final argParser = args.ArgParser();
@@ -28,11 +29,13 @@ args.ArgParser getArgsParser() {
 }
 
 void mergeRoutes({required io.File sourceFile}) {
-  print("Merge file: ${sourceFile.toString()}");
+  final file = gpx.GPXMergeFileCommand(sourceFile);
+  print("GPX file details - version: ${file.version}, creator: ${file.creator}");
 }
 
 void splitFile({required io.File sourceFile}) {
-  print("Split file: ${sourceFile.toString()}");
+  final file = gpx.GPXSplitFileCommand(sourceFile);
+  print("GPX file details - version: ${file.version}, creator: ${file.creator}");
 }
 
 void displayHelp() {
@@ -45,8 +48,7 @@ void displayVersion() {
 
 void main(List<String> options) {
   // Get the configuration parameters
-  final cfg.ConfigFile config = cfg.ConfigFile(support.getConfigFile(appName: 'gpx_utils'));
-  print(config.toString());
+  // final cfg.ConfigFile config = cfg.ConfigFile(support.getConfigFile(appName: 'gpx_utils'));
 
   // Get the options selected by the user
   final argsParser = getArgsParser();
