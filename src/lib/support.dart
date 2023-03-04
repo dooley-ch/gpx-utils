@@ -9,6 +9,7 @@
 // *******************************************************************************************
 import 'dart:io' as io;
 import 'package:path/path.dart' as path;
+import 'package:args/args.dart' as args;
 
 String getHomeFolder() {
   final envVariables = io.Platform.environment;
@@ -38,4 +39,20 @@ io.File getConfigFile({required String appName}) {
   final file = io.File(ctx.join(directory.path, 'config.toml'));
 
   return file;
+}
+
+/// This method parses the command line arguments
+args.ArgResults getOptions(List<String> options) {
+  final argParser = args.ArgParser();
+
+  var cmd = argParser.addCommand("merge");
+  cmd.addOption("file", abbr: "f");
+
+  cmd = argParser.addCommand("split");
+  cmd.addOption("file", abbr: "f");
+
+  argParser.addFlag("help", abbr: "h", negatable: false);
+  argParser.addFlag("version", abbr: "v", negatable: false);
+
+  return argParser.parse(options);
 }

@@ -9,24 +9,14 @@
 // *******************************************************************************************
 import 'dart:io' as io;
 import 'package:args/args.dart' as args;
-// import 'package:src/support.dart' as support;
-// import 'package:src/configfile.dart' as cfg;
+import 'package:version/version.dart' as ver;
+import "package:console/console.dart";
+import 'package:src/support.dart' as support;
+import 'package:src/configfile.dart' as cfg;
 import 'package:src/gpxfile.dart' as gpx;
 
-args.ArgParser getArgsParser() {
-  final argParser = args.ArgParser();
-
-  var cmd = argParser.addCommand("merge");
-  cmd.addOption("file", abbr: "f");
-
-  cmd = argParser.addCommand("split");
-  cmd.addOption("file", abbr: "f");
-
-  argParser.addFlag("help", abbr: "h", negatable: false);
-  argParser.addFlag("version", abbr: "v", negatable: false);
-
-  return argParser;
-}
+final _appVersion = ver.Version(1, 0, 1, preRelease: ["alpha"]);
+final _config = cfg.ConfigFile(support.getConfigFile(appName: 'gpx_utils'));
 
 void mergeRoutes({required io.File sourceFile}) {
   final file = gpx.GPXMergeFileCommand(sourceFile);
@@ -38,43 +28,58 @@ void splitFile({required io.File sourceFile}) {
   print("GPX file details - version: ${file.version}, creator: ${file.creator}");
 }
 
+/// Displays the application help
 void displayHelp() {
-  print("Display help");
+  Console.setTextColor(_config.theme.helpTextColor);
+  print("\nGpx-Utils Version: ${_appVersion.toString()}");
+  print("-v or --version                Displays the application version");
+  print("-h or --help                   Displays this text");
+  print("merge --file[f] <file name>    Merges route or tracking points into a single route or track");
+  print("split --file[f] <file name>    Splits routes or tracks into separate files");
+  print("browse --file[f] <file name>   Displays the file contents");
+  Console.setTextColor(_config.theme.textColor);
 }
 
+/// Displays the application version
 void displayVersion() {
-  print("Display version");
+  Console.write("GPX-Utils Version: ${_appVersion.toString()}");
 }
 
+/// Application entry point
 void main(List<String> options) {
-  // Get the configuration parameters
-  // final cfg.ConfigFile config = cfg.ConfigFile(support.getConfigFile(appName: 'gpx_utils'));
+  Console.init();
+  Console.setTextColor(_config.theme.textColor);
+
 
   // Get the options selected by the user
-  final argsParser = getArgsParser();
-
   args.ArgResults results;
 
   try {
-    results= argsParser.parse(options);
-  } on FormatException {
+    results= support.getOptions(options);
+  } on FormatException catch(e) {
+    Console.setTextColor(_config.theme.errorTextColor);
+    print("\nGPX-Utils: Unable to process command line arguments - $e\n");
+    Console.setTextColor(_config.theme.textColor);
     displayHelp();
     io.exit(255);
   }
 
-  // Determine the command selected
+  // Respond to a request to display the version number
   final version = results['version'] ?? false;
   if (version) {
     displayVersion();
     io.exit(0);
   }
 
+  // Respond to a request to display the help text
   final help = results['help'] ?? false;
   if (help) {
     displayHelp();
     io.exit(0);
   }
 
+  // We have a command other than a request for the version number or to
+  // display the help text
   final cmd = results.command;
   if (cmd != null) {
     switch (cmd.name) {

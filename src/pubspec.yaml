@@ -12,6 +12,8 @@ dependencies:
   meta: ^1.9.0
   args: ^2.4.0
   xml: ^6.2.2
+  console: ^4.1.0
+  version: ^3.0.2
 
 dev_dependencies:
   lints: ^2.0.0
