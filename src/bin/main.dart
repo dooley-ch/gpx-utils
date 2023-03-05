@@ -28,6 +28,12 @@ void splitFile({required io.File sourceFile}) {
   print("GPX file details - version: ${file.version}, creator: ${file.creator}");
 }
 
+void browseFile({required io.File sourceFile}) {
+  final file = gpx.GPXSplitFileCommand(sourceFile);
+  final tree = file.toDisplayTree();
+  print(tree);
+}
+
 /// Displays the application help
 void displayHelp() {
   Console.setTextColor(_config.theme.helpTextColor);
@@ -50,7 +56,6 @@ void main(List<String> options) {
   Console.init();
   Console.setTextColor(_config.theme.textColor);
 
-
   // Get the options selected by the user
   args.ArgResults results;
 
@@ -58,7 +63,7 @@ void main(List<String> options) {
     results= support.getOptions(options);
   } on FormatException catch(e) {
     Console.setTextColor(_config.theme.errorTextColor);
-    print("\nGPX-Utils: Unable to process command line arguments - $e\n");
+    print("\nGPX-Utils: Unable to process command line arguments - $e");
     Console.setTextColor(_config.theme.textColor);
     displayHelp();
     io.exit(255);
@@ -82,14 +87,16 @@ void main(List<String> options) {
   // display the help text
   final cmd = results.command;
   if (cmd != null) {
+    final fileName = cmd["file"];
     switch (cmd.name) {
       case 'merge':
-        final fileName = cmd["file"];
         mergeRoutes(sourceFile: io.File(fileName));
         break;
       case 'split':
-        final fileName = cmd["file"];
         splitFile(sourceFile: io.File(fileName));
+        break;
+      case 'browse':
+        browseFile(sourceFile: io.File(fileName));
         break;
     }
   }

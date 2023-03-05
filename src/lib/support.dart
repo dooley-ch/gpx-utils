@@ -51,6 +51,9 @@ args.ArgResults getOptions(List<String> options) {
   cmd = argParser.addCommand("split");
   cmd.addOption("file", abbr: "f");
 
+  cmd = argParser.addCommand("browse");
+  cmd.addOption("file", abbr: "f");
+
   argParser.addFlag("help", abbr: "h", negatable: false);
   argParser.addFlag("version", abbr: "v", negatable: false);
 

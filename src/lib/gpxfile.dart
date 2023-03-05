@@ -8,12 +8,12 @@
 //
 // *******************************************************************************************
 import 'dart:io' as io;
+import 'package:console/console.dart';
 import 'package:xml/xml.dart';
 import 'package:src/exceptions.dart';
 
-/// The base class for all data points in a GPX file
-abstract class PointBase {
-  late String latitude;         // Geographical coordinate
+class Point {
+  late String latitude;          // Geographical coordinate
   late String longitude;         // Geographical coordinate
   late String elevation;         // Altitude in meters
   late String dateTime;          // Date and time (UTC/Zulu) in ISO 8601 format: yyyy-mm -ddThh:mm:ssZ
@@ -35,7 +35,7 @@ abstract class PointBase {
   late String dgpsId;            // ID of the DGPS station used
   late String extensions;        // GPX extension
 
-  PointBase(XmlElement element) {
+  Point(XmlElement element) {
     final latitude = element.getAttribute("lat") ?? '';
     final longitude = element.getAttribute("lon") ?? '';
 
@@ -66,7 +66,7 @@ abstract class PointBase {
     this.dateTime = dateTime?.text ?? '';
     this.magneticVariation = magneticVariation?.text ?? '';
     this.geoIdHeight = geoIdHeight?.text ?? '';
-    this.name = name?.text ?? '';
+    this.name = name?.text ?? '<Unlabeled>';
     this.comment = comment?.text ?? '';
     this.description = description?.text ?? '';
     this.source = source?.text ?? '';
@@ -84,63 +84,33 @@ abstract class PointBase {
   }
 }
 
-/// Represents a way point defined in the GPX file using the tag: wpt
-class WayPoint extends PointBase {
-  WayPoint(super.element);
-}
-
-/// Represents a route point defined within a route using the tag: rtept
-class RoutePoint extends PointBase {
-  RoutePoint(super.element);
-}
-
-/// Represents a tracking point defined within a tracking data entry using the
-/// tag: trkpt
-class TrackPoint extends PointBase {
-  TrackPoint(super.element);
-}
-
-/// Represents a route defined in a GPX file.  It is denoted by the tag: rte
-class Route {
+class PointsCollection {
   late String name;
   late String desc;
-  final List<RoutePoint> points = <RoutePoint>[];
+  final List<Point> points = <Point>[];
 
-  Route(XmlElement element) {
+  PointsCollection(this.name, this.desc);
+
+  PointsCollection.fromXMLConstructor(XmlElement element, {required String pointTag, String? collectionTag}) {
     final name = element.getElement("name");
     final desc = element.getElement("desc");
-    final points = element.findElements("rte");
-
-    this.name = name?.text ?? '';
+    this.name = name?.text ?? '<Unlabeled>';
     this.desc = desc?.text ?? '';
 
-    if (points.isNotEmpty) {
-      for (var point in points) {
-        final wp = RoutePoint(point);
-        this.points.add(wp);
-      }
+    Iterable<XmlElement>? points;
+    if (collectionTag != null) {
+      final collection = element.getElement(collectionTag);
+      points = collection?.childElements;
+    } else {
+      points = element.findElements(pointTag);
     }
-  }
-}
 
-/// Represents information from tracking a route
-class Track {
-  late String name;
-  late String desc;
-  final List<TrackPoint> points = <TrackPoint>[];
-
-  Track(XmlElement element) {
-    final name = element.getElement("name");
-    final desc = element.getElement("desc");
-    final points = element.getElement("trkseg");
-
-    this.name = name?.text ?? '';
-    this.desc = desc?.text ?? '';
-
-    if (points != null) {
-      for (var point in points.childElements) {
-        final wp = TrackPoint(point);
-        this.points.add(wp);
+    if (points !=null) {
+      if (points.isNotEmpty) {
+        for (element in points) {
+          final point = Point(element);
+          this.points.add(point);
+        }
       }
     }
   }
@@ -167,14 +137,16 @@ abstract class GPXFile {
   late String _version;
   late String _creator;
   late Metadata _metadata;
-  final List<Route> _routes = <Route>[];
-  final List<Track> _tracks = <Track>[];
+  final List<PointsCollection> _routes = <PointsCollection>[];
+  final List<PointsCollection> _tracks = <PointsCollection>[];
+  final List<Point> _wayPoints = <Point>[];
 
   String get version => _version;
   String get creator => _creator;
   Metadata get metadata => _metadata;
-  List<Route> get routes => _routes;
-  List<Track> get tracks => _tracks;
+  List<PointsCollection> get routes => _routes;
+  List<PointsCollection> get tracks => _tracks;
+  List<Point> get wayPoints => _wayPoints;
 
   GPXFile(this._file) {
     if (!_file.existsSync()) {
@@ -187,11 +159,20 @@ abstract class GPXFile {
     _creator = gpx.getAttribute("creator") ?? 'N/A';
     _metadata = _getMetadata(gpx);
 
+    // Process the way points, if any
+    final wayPoints = gpx.findAllElements("wpt");
+    if (wayPoints.isNotEmpty) {
+      for (var element in wayPoints) {
+          final point = Point(element);
+          this.wayPoints.add(point);
+      }
+    }
+
     // Process the tracks
     final tracks = gpx.findAllElements("trk");
     if (tracks.isNotEmpty) {
       for (var element in tracks) {
-        final node = Track(element);
+        final node = PointsCollection.fromXMLConstructor(element, collectionTag: 'trkseg', pointTag: 'trkpt');
         _tracks.add(node);
       }
     }
@@ -200,7 +181,7 @@ abstract class GPXFile {
     final routes = gpx.findAllElements("rte");
     if (routes.isNotEmpty) {
       for (var element in routes) {
-        final node = Route(element);
+        final node = PointsCollection.fromXMLConstructor(element, pointTag: 'rtept');
         _routes.add(node);
       }
     }
@@ -233,6 +214,55 @@ abstract class GPXFile {
     }
 
     return Metadata.emptyConstructor();
+  }
+
+  /// Returns tree representation of the file contents
+  ///
+  /// The return value is usually displayed in the console
+  String toDisplayTree() {
+    // Root node
+    final root = <String, dynamic>{};
+    root['label'] = "GPX - Version $_version, Creator: $_creator (${_file.path})";
+    root['nodes'] = [];
+
+    if (_wayPoints.isNotEmpty) {
+      final wayPoints = <String, dynamic>{};
+      wayPoints['label'] = "WayPoints (${_wayPoints.length})";
+      wayPoints['nodes'] = [];
+      final nodes = root['nodes'] as List<dynamic>;
+      nodes.add(wayPoints);
+    } else {
+      final nodes = root['nodes'] as List<dynamic>;
+      nodes.add("WayPoints (0)");
+    }
+
+    if (_routes.isNotEmpty) {
+      final routes = <String, dynamic>{};
+      routes['label'] = "Routes (${_routes.length})";
+      routes['nodes'] = [];
+      final nodes = root['nodes'] as List<dynamic>;
+      nodes.add(routes);
+    } else {
+      final nodes = root['nodes'] as List<dynamic>;
+      nodes.add("Routes (0)");
+    }
+
+    if (_tracks.isNotEmpty) {
+      final List<String> names = <String>[];
+      for (var element in _tracks) {names.add(element.name);}
+
+      final tracks = <String, dynamic>{};
+      tracks['label'] = "Tracks (${_tracks.length})";
+      tracks['nodes'] = names;
+      
+      final nodes = root['nodes'] as List<dynamic>;
+      nodes.add(tracks);
+    } else {
+      final nodes = root['nodes'] as List<dynamic>;
+      nodes.add("Routes (0)");
+    }
+
+    return createTree(root);
   }
 }
 
