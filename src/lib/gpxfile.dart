@@ -10,30 +10,34 @@
 import 'dart:io' as io;
 import 'package:console/console.dart';
 import 'package:xml/xml.dart';
+import 'package:path/path.dart' as path;
 import 'package:src/exceptions.dart';
 
 class Point {
-  late String latitude;          // Geographical coordinate
-  late String longitude;         // Geographical coordinate
-  late String elevation;         // Altitude in meters
-  late String dateTime;          // Date and time (UTC/Zulu) in ISO 8601 format: yyyy-mm -ddThh:mm:ssZ
-  late String magneticVariation; // Declination / magnetic variation on site in degrees
-  late String geoIdHeight;       // Height related to geoid
-  late String name;              // Proper name of the element
-  late String comment;           // Comment
-  late String description;       // element description
-  late String source;            // Data source/origin
-  late String link;              // Link to further information
-  late String displaySymbol;     // Display symbol
-  late String type;              //  Classification
-  late String fix;               // Type of position fix: none, 2d, 3d, dgps, pps
-  late String sat;               // Number of satellites used for position calculation
-  late String hdop;              // HDOP:Horizontal spread of the position specification
-  late String vdop;              // VDOP: Vertical spread of the position information
-  late String pdo;               // PDOP: Spread of the position information
-  late String ageOfDgpsData;     // Seconds between last DGPS reception and position calculation
-  late String dgpsId;            // ID of the DGPS station used
-  late String extensions;        // GPX extension
+  late String latitude; // Geographical coordinate
+  late String longitude; // Geographical coordinate
+  late String elevation; // Altitude in meters
+  late String
+      dateTime; // Date and time (UTC/Zulu) in ISO 8601 format: yyyy-mm -ddThh:mm:ssZ
+  late String
+      magneticVariation; // Declination / magnetic variation on site in degrees
+  late String geoIdHeight; // Height related to geoid
+  late String name; // Proper name of the element
+  late String comment; // Comment
+  late String description; // element description
+  late String source; // Data source/origin
+  late String link; // Link to further information
+  late String displaySymbol; // Display symbol
+  late String type; //  Classification
+  late String fix; // Type of position fix: none, 2d, 3d, dgps, pps
+  late String sat; // Number of satellites used for position calculation
+  late String hdop; // HDOP:Horizontal spread of the position specification
+  late String vdop; // VDOP: Vertical spread of the position information
+  late String pdo; // PDOP: Spread of the position information
+  late String
+      ageOfDgpsData; // Seconds between last DGPS reception and position calculation
+  late String dgpsId; // ID of the DGPS station used
+  late String extensions; // GPX extension
 
   Point(XmlElement element) {
     final latitude = element.getAttribute("lat") ?? '';
@@ -91,7 +95,8 @@ class PointsCollection {
 
   PointsCollection(this.name, this.desc);
 
-  PointsCollection.fromXMLConstructor(XmlElement element, {required String pointTag, String? collectionTag}) {
+  PointsCollection.fromXMLConstructor(XmlElement element,
+      {required String pointTag, String? collectionTag}) {
     final name = element.getElement("name");
     final desc = element.getElement("desc");
     this.name = name?.text ?? '<Unlabeled>';
@@ -105,7 +110,7 @@ class PointsCollection {
       points = element.findElements(pointTag);
     }
 
-    if (points !=null) {
+    if (points != null) {
       if (points.isNotEmpty) {
         for (element in points) {
           final point = Point(element);
@@ -163,8 +168,8 @@ abstract class GPXFile {
     final wayPoints = gpx.findAllElements("wpt");
     if (wayPoints.isNotEmpty) {
       for (var element in wayPoints) {
-          final point = Point(element);
-          this.wayPoints.add(point);
+        final point = Point(element);
+        this.wayPoints.add(point);
       }
     }
 
@@ -172,7 +177,8 @@ abstract class GPXFile {
     final tracks = gpx.findAllElements("trk");
     if (tracks.isNotEmpty) {
       for (var element in tracks) {
-        final node = PointsCollection.fromXMLConstructor(element, collectionTag: 'trkseg', pointTag: 'trkpt');
+        final node = PointsCollection.fromXMLConstructor(element,
+            collectionTag: 'trkseg', pointTag: 'trkpt');
         _tracks.add(node);
       }
     }
@@ -181,7 +187,8 @@ abstract class GPXFile {
     final routes = gpx.findAllElements("rte");
     if (routes.isNotEmpty) {
       for (var element in routes) {
-        final node = PointsCollection.fromXMLConstructor(element, pointTag: 'rtept');
+        final node =
+            PointsCollection.fromXMLConstructor(element, pointTag: 'rtept');
         _routes.add(node);
       }
     }
@@ -222,7 +229,8 @@ abstract class GPXFile {
   String toDisplayTree() {
     // Root node
     final root = <String, dynamic>{};
-    root['label'] = "GPX - Version $_version, Creator: $_creator (${_file.path})";
+    root['label'] =
+        "GPX - Version $_version, Creator: $_creator (${_file.path})";
     root['nodes'] = [];
 
     if (_wayPoints.isNotEmpty) {
@@ -249,12 +257,14 @@ abstract class GPXFile {
 
     if (_tracks.isNotEmpty) {
       final List<String> names = <String>[];
-      for (var element in _tracks) {names.add(element.name);}
+      for (var element in _tracks) {
+        names.add(element.name);
+      }
 
       final tracks = <String, dynamic>{};
       tracks['label'] = "Tracks (${_tracks.length})";
       tracks['nodes'] = names;
-      
+
       final nodes = root['nodes'] as List<dynamic>;
       nodes.add(tracks);
     } else {
@@ -266,14 +276,100 @@ abstract class GPXFile {
   }
 }
 
+/// Holds common routines used in executing the commands
+mixin GPXFileCommandSupport {
+  io.File getFileName(String name, io.File sourceFile, {bool deleteExiting = false}) {
+    // Make sure the name can be used for a file name
+    name = name.replaceAll(' ', '_').replaceAll('/', '_');
+
+    // Construct the new file name
+    final originalFileName = path.basenameWithoutExtension(sourceFile.path);
+    final newFileName = "${originalFileName}_$name.gpx";
+    final folder = sourceFile.parent;
+    final newFileQualifiedName = path.join(folder.path, newFileName);
+    final newFile = io.File(newFileQualifiedName);
+
+    // Delete if it already exits
+    if (newFile.existsSync() && deleteExiting) {
+      newFile.delete();
+    }
+
+    return newFile;
+  }
+}
+
+
 /// GPX file command to split a given file into a set of files one for each
 /// track or route defined in the file
-class GPXSplitFileCommand extends GPXFile {
+class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
   GPXSplitFileCommand(super._file);
+
+  void _exportFile(PointsCollection track, io.File outputFile) {
+    final builder = XmlBuilder();
+    builder.processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
+
+    builder.element("gpx",
+        attributes: {'creator':"gpx-utils - https://github.com/dooley-ch/gpx-utils"},
+        nest: () {
+          builder.element("metadata", nest: () {
+            builder.element("name", nest: () { builder.text(track.name);});
+            builder.element("time", nest: () { builder.text(DateTime.now().toIso8601String());});
+            builder.element("original-file", nest: () { builder.text(path.basename(_file.path));});
+          });
+          builder.element("trk", nest: () {
+            for (Point point in track.points) {
+              if (point.dateTime.isNotEmpty) {
+                builder.element("trkpt", attributes: {
+                  'lat': point.latitude,
+                  'lon': point.longitude,
+                  'time': point.dateTime
+                });
+              } else {
+                builder.element("trkpt", attributes: {
+                  'lat': point.latitude,
+                  'lon': point.longitude
+                });
+              }
+            }
+          });
+        });
+
+    final doc = builder.buildDocument();
+    final content = doc.toXmlString(pretty: true);
+
+    outputFile.writeAsStringSync(content);
+  }
+
+  /// This method executes the split command
+  bool execute() {
+    if (_tracks.isNotEmpty) {
+      var fileCount = 0;
+
+      for (var track in tracks) {
+        // Create the file name
+        String fileName = track.name;
+        if (fileName == '<Unlabeled>') {
+          fileName = (fileCount++).toString();
+        }
+        final file = getFileName(fileName, _file);
+
+        _exportFile(track, file);
+      }
+    } else {
+      return false;
+    }
+
+    return true;
+  }
 }
 
 /// GPX file command to merge all track or route definitions in the file into
 /// single route or track
 class GPXMergeFileCommand extends GPXFile {
   GPXMergeFileCommand(super._file);
+
+  /// This method executes the merge command
+  bool execute() {
+    return false;
+  }
 }

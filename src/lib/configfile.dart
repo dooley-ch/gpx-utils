@@ -29,8 +29,7 @@ class ConfigFile {
   ConfigFile(this._file) {
     if (_file.existsSync()) {
       // If the file exists we load the contents and use to config the application
-      final content = _file.readAsStringSync();
-      final document = toml.TomlDocument.parse(content).toMap();
+      final document = toml.TomlDocument.loadSync(_file.path).toMap();
       final textColor = document['theme']['textColor'];
       final errorTextColor = document['theme']['errorTextColor'];
       final helpTextColor = document['theme']['helpTextColor'];

@@ -20,12 +20,15 @@ final _config = cfg.ConfigFile(support.getConfigFile(appName: 'gpx_utils'));
 
 void mergeRoutes({required io.File sourceFile}) {
   final file = gpx.GPXMergeFileCommand(sourceFile);
-  print("GPX file details - version: ${file.version}, creator: ${file.creator}");
+
+  file.execute();
+  print(
+      "GPX file details - version: ${file.version}, creator: ${file.creator}");
 }
 
 void splitFile({required io.File sourceFile}) {
   final file = gpx.GPXSplitFileCommand(sourceFile);
-  print("GPX file details - version: ${file.version}, creator: ${file.creator}");
+  file.execute();
 }
 
 void browseFile({required io.File sourceFile}) {
@@ -40,8 +43,10 @@ void displayHelp() {
   print("\nGpx-Utils Version: ${_appVersion.toString()}");
   print("-v or --version                Displays the application version");
   print("-h or --help                   Displays this text");
-  print("merge --file[f] <file name>    Merges route or tracking points into a single route or track");
-  print("split --file[f] <file name>    Splits routes or tracks into separate files");
+  print(
+      "merge --file[f] <file name>    Merges route or tracking points into a single route or track");
+  print(
+      "split --file[f] <file name>    Splits routes or tracks into separate files");
   print("browse --file[f] <file name>   Displays the file contents");
   Console.setTextColor(_config.theme.textColor);
 }
@@ -60,8 +65,8 @@ void main(List<String> options) {
   args.ArgResults results;
 
   try {
-    results= support.getOptions(options);
-  } on FormatException catch(e) {
+    results = support.getOptions(options);
+  } on FormatException catch (e) {
     Console.setTextColor(_config.theme.errorTextColor);
     print("\nGPX-Utils: Unable to process command line arguments - $e");
     Console.setTextColor(_config.theme.textColor);
