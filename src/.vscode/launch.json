@@ -8,7 +8,7 @@
             "name": "gpx-utils",
             "request": "launch",
             "type": "dart",
-            "program": "bin/main.dart",
+            "program": "bin/gpx-utils.dart",
             "args": ["split", "-f", "/Users/jdooley/Development/gpx-utils/src/test/samples/sample0.gpx"]
         }
     ]

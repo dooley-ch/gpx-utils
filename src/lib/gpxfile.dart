@@ -365,11 +365,70 @@ class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
 
 /// GPX file command to merge all track or route definitions in the file into
 /// single route or track
-class GPXMergeFileCommand extends GPXFile {
+class GPXMergeFileCommand extends GPXFile with GPXFileCommandSupport {
   GPXMergeFileCommand(super._file);
 
   /// This method executes the merge command
   bool execute() {
-    return false;
+    // Build the file name
+    // TODO - had support for path dividers
+    final outputFile = getFileName('merged', _file);
+
+    // Construct the xml content
+    if (_tracks.isNotEmpty) {
+      final builder = XmlBuilder();
+      builder.processing(
+          'xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
+
+      builder.element("gpx",
+          attributes: {
+            'creator': "gpx-utils - https://github.com/dooley-ch/gpx-utils"
+          },
+          nest: () {
+            builder.element("metadata", nest: () {
+              builder.element("name", nest: () {
+                builder.text("merged: ${path.basename(_file.path)}");
+              });
+              builder.element("time", nest: () {
+                builder.text(DateTime.now().toIso8601String());
+              });
+              builder.element("original-file", nest: () {
+                builder.text(path.basename(_file.path));
+              });
+            });
+            builder.element("trk", nest: () {
+              builder.element("name", nest: () {builder.text("merged: ${path.basename(_file.path)}");});
+              builder.element("trkseg", nest: () {
+                final firstPoint = _tracks[0].points[0];
+                builder.element("trkpt", attributes: {
+                  'lat': firstPoint.latitude,
+                  'lon': firstPoint.longitude,
+                  'time': firstPoint.dateTime
+                });
+                for (var element in _tracks) {
+                  var isFirst = true;
+                  for (var point in element.points) {
+                    if (isFirst) {
+                      isFirst = false;
+                      continue;
+                    }
+                    builder.element("trkpt", attributes: {
+                      'lat': point.latitude,
+                      'lon': point.longitude,
+                      'time': point.dateTime
+                    });
+                  }
+                }
+              });
+            });
+          });
+
+      // Write the file
+      final doc = builder.buildDocument();
+      final content = doc.toXmlString(pretty: true);
+      outputFile.writeAsStringSync(content);
+    }
+
+    return true;
   }
 }
