@@ -21,3 +21,11 @@ class InvalidGpxFileException implements Exception {
   /// Creates a new GPX file exception with an optional part.
   const InvalidGpxFileException([this.message = ""]);
 }
+
+class OutputFileExistsException implements Exception {
+  late String message;
+
+  OutputFileExistsException(String fileName) {
+    message = "An output file with the name: $fileName, already exists";
+  }
+}

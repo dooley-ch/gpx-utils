@@ -18,17 +18,17 @@ import 'package:src/gpxfile.dart' as gpx;
 final _appVersion = ver.Version(1, 0, 1, preRelease: ["alpha"]);
 final _config = cfg.ConfigFile(support.getConfigFile(appName: 'gpx_utils'));
 
-void mergeRoutes({required io.File sourceFile}) {
+void mergeRoutes({required io.File sourceFile, required String outputFolder}) {
   final file = gpx.GPXMergeFileCommand(sourceFile);
 
-  file.execute();
+  file.execute(outputFolder, deleteExiting: _config.runtime.overwriteOutputFiles);
   print(
       "GPX file details - version: ${file.version}, creator: ${file.creator}");
 }
 
-void splitFile({required io.File sourceFile}) {
+void splitFile({required io.File sourceFile, required String outputFolder}) {
   final file = gpx.GPXSplitFileCommand(sourceFile);
-  file.execute();
+  file.execute(outputFolder, deleteExiting: _config.runtime.overwriteOutputFiles);
 }
 
 void browseFile({required io.File sourceFile}) {
@@ -95,10 +95,10 @@ void main(List<String> options) {
     final fileName = cmd["file"];
     switch (cmd.name) {
       case 'merge':
-        mergeRoutes(sourceFile: io.File(fileName));
+        mergeRoutes(sourceFile: io.File(fileName), outputFolder: _config.runtime.outputFolder);
         break;
       case 'split':
-        splitFile(sourceFile: io.File(fileName));
+        splitFile(sourceFile: io.File(fileName), outputFolder: _config.runtime.outputFolder);
         break;
       case 'browse':
         browseFile(sourceFile: io.File(fileName));

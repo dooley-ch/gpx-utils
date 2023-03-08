@@ -278,20 +278,25 @@ abstract class GPXFile {
 
 /// Holds common routines used in executing the commands
 mixin GPXFileCommandSupport {
-  io.File getFileName(String name, io.File sourceFile, {bool deleteExiting = false}) {
+  io.File getFileName(String name, io.File sourceFile, String outputFolder, {bool deleteExiting = false}) {
     // Make sure the name can be used for a file name
     name = name.replaceAll(' ', '_').replaceAll('/', '_');
+
+    // Make sure the output folder exists
+    final folder = io.Directory(outputFolder);
+    folder.createSync(recursive: true);
 
     // Construct the new file name
     final originalFileName = path.basenameWithoutExtension(sourceFile.path);
     final newFileName = "${originalFileName}_$name.gpx";
-    final folder = sourceFile.parent;
-    final newFileQualifiedName = path.join(folder.path, newFileName);
+    final newFileQualifiedName = path.join(outputFolder, newFileName);
     final newFile = io.File(newFileQualifiedName);
 
     // Delete if it already exits
     if (newFile.existsSync() && deleteExiting) {
       newFile.delete();
+    } else {
+      throw OutputFileExistsException(newFileQualifiedName);
     }
 
     return newFile;
@@ -341,7 +346,7 @@ class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
   }
 
   /// This method executes the split command
-  bool execute() {
+  bool execute(String outputFolder, {bool deleteExiting = false}) {
     if (_tracks.isNotEmpty) {
       var fileCount = 0;
 
@@ -351,7 +356,7 @@ class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
         if (fileName == '<Unlabeled>') {
           fileName = (fileCount++).toString();
         }
-        final file = getFileName(fileName, _file);
+        final file = getFileName(fileName, _file, outputFolder, deleteExiting: deleteExiting);
 
         _exportFile(track, file);
       }
@@ -369,10 +374,10 @@ class GPXMergeFileCommand extends GPXFile with GPXFileCommandSupport {
   GPXMergeFileCommand(super._file);
 
   /// This method executes the merge command
-  bool execute() {
+  bool execute(String outputFolder, {bool deleteExiting = false}) {
     // Build the file name
     // TODO - had support for path dividers
-    final outputFile = getFileName('merged', _file);
+    final outputFile = getFileName('merged', _file, outputFolder, deleteExiting: deleteExiting);
 
     // Construct the xml content
     if (_tracks.isNotEmpty) {

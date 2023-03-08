@@ -22,19 +22,36 @@ class Theme {
   String toString() => "Theme - textColor: $textColor, errorTextColor: $errorTextColor";
 }
 
+class Runtime {
+  final String outputFolder;
+  final bool overwriteOutputFiles;
+
+  Runtime(this.outputFolder, this.overwriteOutputFiles);
+
+  @override
+  String toString() => "Runtime - overwriteOutputFiles: $overwriteOutputFiles, outputFolder: $outputFolder";
+}
+
 class ConfigFile {
   final io.File _file;
   late Theme theme;
+  late Runtime runtime;
 
   ConfigFile(this._file) {
     if (_file.existsSync()) {
       // If the file exists we load the contents and use to config the application
       final document = toml.TomlDocument.loadSync(_file.path).toMap();
+
       final textColor = document['theme']['textColor'];
       final errorTextColor = document['theme']['errorTextColor'];
       final helpTextColor = document['theme']['helpTextColor'];
 
       theme = Theme(textColor, errorTextColor, helpTextColor);
+
+      final overwriteFiles = document['runtime']['overwriteOutputFiles'] as bool;
+      final outputFolder = document['runtime']['outputFolder'];
+
+      runtime = Runtime(outputFolder, overwriteFiles);
     } else {
       // If no config file is found we fall back on the default values
       theme = Theme(Color.DARK_BLUE.id, Color.DARK_RED.id, Color.LIGHT_GRAY.id);
