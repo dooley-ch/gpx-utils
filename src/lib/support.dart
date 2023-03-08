@@ -47,9 +47,11 @@ args.ArgResults getOptions(List<String> options) {
 
   var cmd = argParser.addCommand("merge");
   cmd.addOption("file", abbr: "f");
+  cmd.addFlag("overwrite", abbr: "o", defaultsTo: false);
 
   cmd = argParser.addCommand("split");
   cmd.addOption("file", abbr: "f");
+  cmd.addFlag("overwrite", abbr: "o", defaultsTo: false);
 
   cmd = argParser.addCommand("browse");
   cmd.addOption("file", abbr: "f");

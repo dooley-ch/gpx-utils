@@ -18,17 +18,17 @@ import 'package:src/gpxfile.dart' as gpx;
 final _appVersion = ver.Version(1, 0, 1, preRelease: ["alpha"]);
 final _config = cfg.ConfigFile(support.getConfigFile(appName: 'gpx_utils'));
 
-void mergeRoutes({required io.File sourceFile, required String outputFolder}) {
+void mergeRoutes({required io.File sourceFile, required String outputFolder, required bool overwriteOutputFiles}) {
   final file = gpx.GPXMergeFileCommand(sourceFile);
 
-  file.execute(outputFolder, deleteExiting: _config.runtime.overwriteOutputFiles);
+  file.execute(outputFolder, deleteExiting: overwriteOutputFiles);
   print(
       "GPX file details - version: ${file.version}, creator: ${file.creator}");
 }
 
-void splitFile({required io.File sourceFile, required String outputFolder}) {
+void splitFile({required io.File sourceFile, required String outputFolder, required bool overwriteOutputFiles}) {
   final file = gpx.GPXSplitFileCommand(sourceFile);
-  file.execute(outputFolder, deleteExiting: _config.runtime.overwriteOutputFiles);
+  file.execute(outputFolder, deleteExiting: overwriteOutputFiles);
 }
 
 void browseFile({required io.File sourceFile}) {
@@ -93,12 +93,14 @@ void main(List<String> options) {
   final cmd = results.command;
   if (cmd != null) {
     final fileName = cmd["file"];
+    final overwrite = cmd['overwrite'];
+
     switch (cmd.name) {
       case 'merge':
-        mergeRoutes(sourceFile: io.File(fileName), outputFolder: _config.runtime.outputFolder);
+        mergeRoutes(sourceFile: io.File(fileName), outputFolder: _config.runtime.outputFolder, overwriteOutputFiles: overwrite);
         break;
       case 'split':
-        splitFile(sourceFile: io.File(fileName), outputFolder: _config.runtime.outputFolder);
+        splitFile(sourceFile: io.File(fileName), outputFolder: _config.runtime.outputFolder, overwriteOutputFiles: overwrite);
         break;
       case 'browse':
         browseFile(sourceFile: io.File(fileName));
