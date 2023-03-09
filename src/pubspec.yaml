@@ -1,7 +1,18 @@
-name: src
-description: A sample command-line application.
+name: gpx-utils
+description: A utility to merge and split gpx files for use with komoot.
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+homepage: https://github.com/dooley-ch
+repository: https://github.com/dooley-ch/gpx-utils
+
+platforms:
+  linux:
+  macos:
+  windows:
+
+publish_to: none
+
+funding:
+  - https://www.buymeacoffee.com/dooley-ch
 
 environment:
   sdk: '>=2.19.2 <3.0.0'
