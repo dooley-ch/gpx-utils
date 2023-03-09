@@ -24,12 +24,11 @@ class Theme {
 
 class Runtime {
   final String outputFolder;
-  final bool overwriteOutputFiles;
 
-  Runtime(this.outputFolder, this.overwriteOutputFiles);
+  Runtime(this.outputFolder);
 
   @override
-  String toString() => "Runtime - overwriteOutputFiles: $overwriteOutputFiles, outputFolder: $outputFolder";
+  String toString() => "Runtime - outputFolder: $outputFolder";
 }
 
 class ConfigFile {
@@ -48,10 +47,9 @@ class ConfigFile {
 
       theme = Theme(textColor, errorTextColor, helpTextColor);
 
-      final overwriteFiles = document['runtime']['overwriteOutputFiles'] as bool;
       final outputFolder = document['runtime']['outputFolder'];
 
-      runtime = Runtime(outputFolder, overwriteFiles);
+      runtime = Runtime(outputFolder);
     } else {
       // If no config file is found we fall back on the default values
       theme = Theme(Color.DARK_BLUE.id, Color.DARK_RED.id, Color.LIGHT_GRAY.id);

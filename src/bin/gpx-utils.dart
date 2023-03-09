@@ -92,15 +92,16 @@ void main(List<String> options) {
   // display the help text
   final cmd = results.command;
   if (cmd != null) {
-    final fileName = cmd["file"];
-    final overwrite = cmd['overwrite'];
+    final fileName = cmd[support.CommandArguments.fileOption];
+    final deleteExisting = cmd[support.CommandArguments.deleteExistingFilesOption];
+    final outputFolder = cmd[support.CommandArguments.outputFolderOption] ?? _config.runtime.outputFolder;
 
     switch (cmd.name) {
       case 'merge':
-        mergeRoutes(sourceFile: io.File(fileName), outputFolder: _config.runtime.outputFolder, overwriteOutputFiles: overwrite);
+        mergeRoutes(sourceFile: io.File(fileName), outputFolder: outputFolder, overwriteOutputFiles: deleteExisting);
         break;
       case 'split':
-        splitFile(sourceFile: io.File(fileName), outputFolder: _config.runtime.outputFolder, overwriteOutputFiles: overwrite);
+        splitFile(sourceFile: io.File(fileName), outputFolder: outputFolder, overwriteOutputFiles: deleteExisting);
         break;
       case 'browse':
         browseFile(sourceFile: io.File(fileName));

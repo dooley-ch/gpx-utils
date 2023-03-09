@@ -41,20 +41,33 @@ io.File getConfigFile({required String appName}) {
   return file;
 }
 
+class CommandArguments {
+  static const String mergeCommand = 'merge';
+  static const String splitCommand = 'split';
+  static const String browseCommand = 'browse';
+
+  static const String fileOption = 'file';
+  static const String deleteExistingFilesOption = 'delete';
+  static const String outputFolderOption = 'output';
+}
+
+
 /// This method parses the command line arguments
 args.ArgResults getOptions(List<String> options) {
   final argParser = args.ArgParser();
 
-  var cmd = argParser.addCommand("merge");
-  cmd.addOption("file", abbr: "f");
-  cmd.addFlag("overwrite", abbr: "o", defaultsTo: false);
+  var cmd = argParser.addCommand(CommandArguments.mergeCommand);
+  cmd.addOption(CommandArguments.fileOption, abbr: "f");
+  cmd.addFlag(CommandArguments.deleteExistingFilesOption, abbr: "d", defaultsTo: false, negatable: false);
+  cmd.addOption(CommandArguments.outputFolderOption, abbr: "o", defaultsTo: null);
 
-  cmd = argParser.addCommand("split");
-  cmd.addOption("file", abbr: "f");
-  cmd.addFlag("overwrite", abbr: "o", defaultsTo: false);
+  cmd = argParser.addCommand(CommandArguments.splitCommand);
+  cmd.addOption(CommandArguments.fileOption, abbr: "f");
+  cmd.addFlag(CommandArguments.deleteExistingFilesOption, abbr: "d", defaultsTo: false, negatable: false);
+  cmd.addOption(CommandArguments.outputFolderOption, abbr: "o", defaultsTo: null);
 
-  cmd = argParser.addCommand("browse");
-  cmd.addOption("file", abbr: "f");
+  cmd = argParser.addCommand(CommandArguments.browseCommand);
+  cmd.addOption(CommandArguments.fileOption, abbr: "f");
 
   argParser.addFlag("help", abbr: "h", negatable: false);
   argParser.addFlag("version", abbr: "v", negatable: false);
