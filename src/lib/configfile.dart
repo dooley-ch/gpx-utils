@@ -10,6 +10,9 @@
 import 'dart:io' as io;
 import 'package:console/console.dart';
 import 'package:toml/toml.dart' as toml;
+import 'package:src/support.dart' as support;
+
+final config = ConfigFile(support.getConfigFile(appName: 'gpx_utils'));
 
 class Theme {
   final int textColor;

@@ -293,10 +293,12 @@ mixin GPXFileCommandSupport {
     final newFile = io.File(newFileQualifiedName);
 
     // Delete if it already exits
-    if (newFile.existsSync() && deleteExiting) {
-      newFile.delete();
-    } else {
-      throw OutputFileExistsException(newFileQualifiedName);
+    if (newFile.existsSync()) {
+      if (deleteExiting) {
+        newFile.delete();
+      } else {
+        throw OutputFileExistsException(newFileQualifiedName);
+      }
     }
 
     return newFile;
