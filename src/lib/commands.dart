@@ -12,11 +12,13 @@ import 'package:args/command_runner.dart';
 import 'package:src/exceptions.dart';
 import 'package:src/gpxfile.dart' as gpx;
 import 'package:src/configfile.dart';
+import 'package:src/version.dart';
 
 class CommandArguments {
   static const String mergeCommand = 'merge';
   static const String splitCommand = 'split';
   static const String browseCommand = 'browse';
+  static const String versionCommand = 'version';
 
   static const String fileOption = 'file';
   static const String deleteExistingFilesOption = 'delete';
@@ -106,5 +108,18 @@ class BrowseCommand extends Command with CommandSupport  {
     final file = gpx.GPXSplitFileCommand(sourceFile);
     final tree = file.toDisplayTree();
     print(tree);
+  }
+}
+
+class VersionCommand extends Command {
+  @override
+  String get description => 'Prints the application version number';
+
+  @override
+  String get name => CommandArguments.versionCommand;
+
+  @override
+  void run() {
+    print(appVersion.toString());
   }
 }

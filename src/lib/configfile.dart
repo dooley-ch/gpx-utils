@@ -54,7 +54,6 @@ class ConfigFile {
 
       runtime = Runtime(outputFolder);
     } else {
-      // If no config file is found we fall back on the default values
       theme = Theme(Color.DARK_BLUE.id, Color.DARK_RED.id, Color.LIGHT_GRAY.id);
     }
   }

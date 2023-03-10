@@ -1,5 +1,5 @@
 // *******************************************************************************************
-//  File:  gpx-utils.dart
+//  File:  gpxutils.dart
 //
 //  Created: 28-02-2023
 //
@@ -8,12 +8,9 @@
 //
 // *******************************************************************************************
 import 'package:args/command_runner.dart';
-import 'package:version/version.dart' as ver;
 import "package:console/console.dart";
 import 'package:src/configfile.dart';
 import 'package:src/commands.dart';
-
-final _appVersion = ver.Version(1, 0, 1, preRelease: ["alpha"]);
 
 void main(List<String> params) {
   Console.init();
@@ -23,5 +20,6 @@ void main(List<String> params) {
     ..addCommand(MergeTracksCommand())
     ..addCommand(SplitTracksCommand())
     ..addCommand(BrowseCommand())
+    ..addCommand(VersionCommand())
     ..run(params);
 }

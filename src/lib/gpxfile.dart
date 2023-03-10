@@ -121,7 +121,6 @@ class PointsCollection {
   }
 }
 
-/// Represents metadata from the file
 class Metadata {
   late String name;
   late String desc;
@@ -136,7 +135,6 @@ class Metadata {
   }
 }
 
-/// The base class for all forms of GPX file command
 abstract class GPXFile {
   final io.File _file;
   late String _version;
@@ -173,7 +171,6 @@ abstract class GPXFile {
       }
     }
 
-    // Process the tracks
     final tracks = gpx.findAllElements("trk");
     if (tracks.isNotEmpty) {
       for (var element in tracks) {
@@ -183,7 +180,6 @@ abstract class GPXFile {
       }
     }
 
-    // Process the routes
     final routes = gpx.findAllElements("rte");
     if (routes.isNotEmpty) {
       for (var element in routes) {
@@ -194,7 +190,7 @@ abstract class GPXFile {
     }
   }
 
-  // This method parses the GPX file and returns the file's root node
+
   XmlElement _getFileRoot(io.File file) {
     final content = _file.readAsStringSync();
     final document = XmlDocument.parse(content);
@@ -223,9 +219,6 @@ abstract class GPXFile {
     return Metadata.emptyConstructor();
   }
 
-  /// Returns tree representation of the file contents
-  ///
-  /// The return value is usually displayed in the console
   String toDisplayTree() {
     // Root node
     final root = <String, dynamic>{};
@@ -276,7 +269,6 @@ abstract class GPXFile {
   }
 }
 
-/// Holds common routines used in executing the commands
 mixin GPXFileCommandSupport {
   io.File getFileName(String name, io.File sourceFile, String outputFolder, {bool deleteExiting = false}) {
     // Make sure the name can be used for a file name
@@ -306,8 +298,6 @@ mixin GPXFileCommandSupport {
 }
 
 
-/// GPX file command to split a given file into a set of files one for each
-/// track or route defined in the file
 class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
   GPXSplitFileCommand(super._file);
 
@@ -347,7 +337,6 @@ class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
     outputFile.writeAsStringSync(content);
   }
 
-  /// This method executes the split command
   bool execute(String outputFolder, {bool deleteExiting = false}) {
     if (_tracks.isNotEmpty) {
       var fileCount = 0;
@@ -370,12 +359,9 @@ class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
   }
 }
 
-/// GPX file command to merge all track or route definitions in the file into
-/// single route or track
 class GPXMergeFileCommand extends GPXFile with GPXFileCommandSupport {
   GPXMergeFileCommand(super._file);
 
-  /// This method executes the merge command
   bool execute(String outputFolder, {bool deleteExiting = false}) {
     // Build the file name
     // TODO - had support for path dividers
