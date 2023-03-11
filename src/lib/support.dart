@@ -39,3 +39,19 @@ io.File getConfigFile({required String appName}) {
 
   return file;
 }
+
+io.File getLogFile({required String appName}) {
+  path.Context ctx = path.Context(style: path.Style.posix);
+  if (io.Platform.isWindows) {
+    ctx = path.Context(style: path.Style.windows);
+  }
+
+  final folder = ctx.join(getHomeFolder(), 'support_libs', appName);
+
+  final directory = io.Directory(folder);
+  directory.createSync(recursive: true);
+
+  final file = io.File(ctx.join(directory.path, '$appName.log'));
+
+  return file;
+}

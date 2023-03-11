@@ -12,7 +12,7 @@ import 'package:console/console.dart';
 import 'package:toml/toml.dart' as toml;
 import 'package:src/support.dart' as support;
 
-final config = ConfigFile(support.getConfigFile(appName: 'gpx_utils'));
+final config = ConfigFile(support.getConfigFile(appName: 'gpxutils'));
 
 class Theme {
   final int textColor;
@@ -34,27 +34,38 @@ class Runtime {
   String toString() => "Runtime - outputFolder: $outputFolder";
 }
 
+class Logging {
+  final int level;
+
+  Logging(this.level);
+
+  @override
+  String toString() => "Logging - level: $level";
+}
+
 class ConfigFile {
   final io.File _file;
   late Theme theme;
   late Runtime runtime;
+  late Logging logging;
 
   ConfigFile(this._file) {
     if (_file.existsSync()) {
-      // If the file exists we load the contents and use to config the application
       final document = toml.TomlDocument.loadSync(_file.path).toMap();
 
       final textColor = document['theme']['textColor'];
       final errorTextColor = document['theme']['errorTextColor'];
       final helpTextColor = document['theme']['helpTextColor'];
-
       theme = Theme(textColor, errorTextColor, helpTextColor);
 
       final outputFolder = document['runtime']['outputFolder'];
-
       runtime = Runtime(outputFolder);
+
+      final loggingLevel = document['logging']['level'] as int;
+      logging = Logging(loggingLevel);
     } else {
       theme = Theme(Color.DARK_BLUE.id, Color.DARK_RED.id, Color.LIGHT_GRAY.id);
+      runtime = Runtime(io.Directory.current.path);
     }
   }
 

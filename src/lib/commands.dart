@@ -9,6 +9,7 @@
 // *******************************************************************************************
 import 'dart:io' as io;
 import 'package:args/command_runner.dart';
+import 'package:logging/logging.dart';
 import 'package:src/exceptions.dart';
 import 'package:src/gpxfile.dart' as gpx;
 import 'package:src/configfile.dart';
@@ -26,11 +27,14 @@ class CommandArguments {
 }
 
 mixin CommandSupport {
+  final log = Logger('command-runner');
+
   io.File getSourceFile(String filePath) {
     final file = io.File(filePath);
 
     if (!file.existsSync()) {
-      throw SourceFileNotFoundException("Source file not found", filePath);
+      log.severe("Source file not found: $filePath");
+      throw SourceFileNotFoundException('Source file not found', filePath);
     }
 
     return file;
@@ -53,13 +57,21 @@ class MergeTracksCommand extends Command with CommandSupport {
   @override
   void run() {
     final sourceFileName = argResults![CommandArguments.fileOption] ?? '';
-    final sourceFile = getSourceFile(sourceFileName);
     final deleteExisting = argResults![CommandArguments.deleteExistingFilesOption] ?? false;
     final outputFolder = argResults![CommandArguments.outputFolderOption] ?? config.runtime.outputFolder;
+
+    log.info("Merge Command - f: $sourceFileName, output: $outputFolder, delete: $deleteExisting");
+
+    try {
+    final sourceFile = getSourceFile(sourceFileName);
 
     final file = gpx.GPXMergeFileCommand(sourceFile);
     file.execute(outputFolder, deleteExiting: deleteExisting);
     print('File merged successfully');
+    } catch (e) {
+      log.severe("Failed to merge file: $e");
+      rethrow;
+    }
   }
 }
 
@@ -79,13 +91,21 @@ class SplitTracksCommand extends Command with CommandSupport  {
   @override
   void run() {
     final sourceFileName = argResults![CommandArguments.fileOption] ?? '';
-    final sourceFile = getSourceFile(sourceFileName);
     final deleteExisting =  argResults![CommandArguments.deleteExistingFilesOption] ?? false;
     final outputFolder = argResults![CommandArguments.outputFolderOption] ?? config.runtime.outputFolder;
 
-    final file = gpx.GPXSplitFileCommand(sourceFile);
-    file.execute(outputFolder, deleteExiting: deleteExisting);
-    print('File split successfully');
+    log.info("Split Command - f: $sourceFileName, output: $outputFolder, delete: $deleteExisting");
+
+    try {
+      final sourceFile = getSourceFile(sourceFileName);
+
+      final file = gpx.GPXSplitFileCommand(sourceFile);
+      file.execute(outputFolder, deleteExiting: deleteExisting);
+      print('File split successfully');
+    } catch (e) {
+      log.severe("Failed to merge file: $e");
+      rethrow;
+    }
   }
 }
 
@@ -103,15 +123,23 @@ class BrowseCommand extends Command with CommandSupport  {
   @override
   void run() {
     final sourceFileName = argResults![CommandArguments.fileOption] ?? '';
-    final sourceFile = getSourceFile(sourceFileName);
 
-    final file = gpx.GPXSplitFileCommand(sourceFile);
-    final tree = file.toDisplayTree();
-    print(tree);
+    log.info("Browse Command - f: $sourceFileName");
+
+    try {
+      final sourceFile = getSourceFile(sourceFileName);
+
+      final file = gpx.GPXSplitFileCommand(sourceFile);
+      final tree = file.toDisplayTree();
+      print(tree);
+    } catch (e) {
+      log.severe("Failed to browse file: $e");
+      rethrow;
+    }
   }
 }
 
-class VersionCommand extends Command {
+class VersionCommand extends Command with CommandSupport {
   @override
   String get description => 'Prints the application version number';
 
@@ -120,6 +148,8 @@ class VersionCommand extends Command {
 
   @override
   void run() {
+    log.info("Version Command");
+
     print(appVersion.toString());
   }
 }

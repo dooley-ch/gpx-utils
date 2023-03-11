@@ -7,14 +7,25 @@
 //  28-02-2023: Initial version
 //
 // *******************************************************************************************
+import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
+import 'package:logging/logging.dart';
 import 'package:src/configfile.dart';
 import 'package:src/commands.dart';
+import 'package:src/support.dart';
 
 void main(List<String> params) {
   Console.init();
   Console.setTextColor(config.theme.textColor);
+
+  final logFile = getLogFile(appName: 'gpxutils');
+  logFile.writeAsStringSync('========== *** Start *** ==========\n', mode: FileMode.append);
+
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    logFile.writeAsStringSync("${record.time.toIso8601String()}: ${record.level.name}: ${record.message}\n", mode: FileMode.append);
+  });
 
   CommandRunner("gpx-utils", "A utility to merge and split gpx files for use with Komoot")
     ..addCommand(MergeTracksCommand())
@@ -22,4 +33,7 @@ void main(List<String> params) {
     ..addCommand(BrowseCommand())
     ..addCommand(VersionCommand())
     ..run(params);
+
+  logFile.writeAsStringSync('========== ***  End  *** ==========\n', mode: FileMode.append);
+  exit(0);
 }
