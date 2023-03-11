@@ -15,7 +15,7 @@ import 'package:src/configfile.dart';
 import 'package:src/commands.dart';
 import 'package:src/support.dart';
 
-void main(List<String> params) {
+void main(List<String> params) async {
   Console.init();
   Console.setTextColor(config.theme.textColor);
 
@@ -27,13 +27,23 @@ void main(List<String> params) {
     logFile.writeAsStringSync("${record.time.toIso8601String()}: ${record.level.name}: ${record.message}\n", mode: FileMode.append);
   });
 
-  CommandRunner("gpx-utils", "A utility to merge and split gpx files for use with Komoot")
-    ..addCommand(MergeTracksCommand())
-    ..addCommand(SplitTracksCommand())
-    ..addCommand(BrowseCommand())
-    ..addCommand(VersionCommand())
-    ..run(params);
+  int exitCode = 0;
+
+  try {
+    final runner = CommandRunner("gpx-utils",
+        "A utility to merge and split gpx files for use with Komoot")
+      ..addCommand(MergeTracksCommand())..addCommand(
+          SplitTracksCommand())..addCommand(BrowseCommand())..addCommand(
+          VersionCommand());
+
+    await runner.run(params);
+  } catch (e) {
+    Console.setTextColor(config.theme.errorTextColor);
+    Console.write("Operation failed: $e.\nSee log for details.");
+    Console.setTextColor(config.theme.textColor);
+    exitCode = 255;
+  }
 
   logFile.writeAsStringSync('========== ***  End  *** ==========\n', mode: FileMode.append);
-  exit(0);
+  exit(exitCode);
 }

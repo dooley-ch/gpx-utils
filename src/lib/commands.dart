@@ -33,7 +33,6 @@ mixin CommandSupport {
     final file = io.File(filePath);
 
     if (!file.existsSync()) {
-      log.severe("Source file not found: $filePath");
       throw SourceFileNotFoundException('Source file not found', filePath);
     }
 
@@ -63,11 +62,11 @@ class MergeTracksCommand extends Command with CommandSupport {
     log.info("Merge Command - f: $sourceFileName, output: $outputFolder, delete: $deleteExisting");
 
     try {
-    final sourceFile = getSourceFile(sourceFileName);
+      final sourceFile = getSourceFile(sourceFileName);
 
-    final file = gpx.GPXMergeFileCommand(sourceFile);
-    file.execute(outputFolder, deleteExiting: deleteExisting);
-    print('File merged successfully');
+      final file = gpx.GPXMergeFileCommand(sourceFile);
+      file.execute(outputFolder, deleteExiting: deleteExisting);
+      print('File merged successfully');
     } catch (e) {
       log.severe("Failed to merge file: $e");
       rethrow;
