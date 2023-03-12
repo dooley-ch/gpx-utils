@@ -11,7 +11,7 @@ import 'dart:io' as io;
 import 'package:console/console.dart';
 import 'package:xml/xml.dart';
 import 'package:path/path.dart' as path;
-import 'package:src/exceptions.dart';
+import 'exceptions.dart';
 
 /// This class represents a point of a route or track map
 class Point {

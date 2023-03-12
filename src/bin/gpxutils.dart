@@ -10,10 +10,10 @@
 import 'dart:io';
 import 'package:args/command_runner.dart';
 import "package:console/console.dart";
+import 'package:gpxutils/commands.dart';
+import 'package:gpxutils/configfile.dart';
+import 'package:gpxutils/support.dart';
 import 'package:logging/logging.dart';
-import 'package:src/configfile.dart';
-import 'package:src/commands.dart';
-import 'package:src/support.dart';
 
 /// This is the application entry point
 ///

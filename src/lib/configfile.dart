@@ -10,10 +10,10 @@
 import 'dart:io' as io;
 import 'package:console/console.dart';
 import 'package:toml/toml.dart' as toml;
-import 'package:src/support.dart' as support;
+import 'support.dart';
 
 /// This variable holds a reverence to an instance of the [ConfigFile] class.
-final config = ConfigFile(support.getConfigFile(appName: 'gpxutils'));
+final config = ConfigFile(getConfigFile(appName: 'gpxutils'));
 
 /// This class holds the theme colors used by the application
 class Theme {

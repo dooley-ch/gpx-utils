@@ -10,10 +10,11 @@
 import 'dart:io' as io;
 import 'package:args/command_runner.dart';
 import 'package:logging/logging.dart';
-import 'package:src/exceptions.dart';
-import 'package:src/gpxfile.dart' as gpx;
-import 'package:src/configfile.dart';
-import 'package:src/version.dart';
+import 'configfile.dart';
+import 'exceptions.dart';
+import 'gpxfile.dart';
+import 'version.dart';
+
 
 /// This class defines the commands supported by the application
 class CommandArguments {
@@ -69,7 +70,7 @@ class MergeTracksCommand extends Command with CommandSupport {
     try {
       final sourceFile = getSourceFile(sourceFileName);
 
-      final file = gpx.GPXMergeFileCommand(sourceFile);
+      final file = GPXMergeFileCommand(sourceFile);
       file.execute(outputFolder, deleteExiting: deleteExisting);
       print('File merged successfully');
     } catch (e) {
@@ -104,7 +105,7 @@ class SplitTracksCommand extends Command with CommandSupport  {
     try {
       final sourceFile = getSourceFile(sourceFileName);
 
-      final file = gpx.GPXSplitFileCommand(sourceFile);
+      final file = GPXSplitFileCommand(sourceFile);
       file.execute(outputFolder, deleteExiting: deleteExisting);
       print('File split successfully');
     } catch (e) {
@@ -135,7 +136,7 @@ class BrowseCommand extends Command with CommandSupport  {
     try {
       final sourceFile = getSourceFile(sourceFileName);
 
-      final file = gpx.GPXSplitFileCommand(sourceFile);
+      final file = GPXSplitFileCommand(sourceFile);
       final tree = file.toDisplayTree();
       print(tree);
     } catch (e) {
