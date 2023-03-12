@@ -13,6 +13,7 @@ import 'package:xml/xml.dart';
 import 'package:path/path.dart' as path;
 import 'package:src/exceptions.dart';
 
+/// This class represents a point of a route or track map
 class Point {
   late String latitude; // Geographical coordinate
   late String longitude; // Geographical coordinate
@@ -88,6 +89,7 @@ class Point {
   }
 }
 
+/// This class represents a route or a track in a GPX file
 class PointsCollection {
   late String name;
   late String desc;
@@ -121,6 +123,7 @@ class PointsCollection {
   }
 }
 
+/// This class holds the metadata contained in a GPX file
 class Metadata {
   late String name;
   late String desc;
@@ -135,21 +138,18 @@ class Metadata {
   }
 }
 
+/// This class holds the contents of a GPX source file
 abstract class GPXFile {
   final io.File _file;
   late String _version;
   late String _creator;
   late Metadata _metadata;
-  final List<PointsCollection> _routes = <PointsCollection>[];
   final List<PointsCollection> _tracks = <PointsCollection>[];
-  final List<Point> _wayPoints = <Point>[];
 
   String get version => _version;
   String get creator => _creator;
   Metadata get metadata => _metadata;
-  List<PointsCollection> get routes => _routes;
   List<PointsCollection> get tracks => _tracks;
-  List<Point> get wayPoints => _wayPoints;
 
   GPXFile(this._file) {
     if (!_file.existsSync()) {
@@ -162,15 +162,6 @@ abstract class GPXFile {
     _creator = gpx.getAttribute("creator") ?? 'N/A';
     _metadata = _getMetadata(gpx);
 
-    // Process the way points, if any
-    final wayPoints = gpx.findAllElements("wpt");
-    if (wayPoints.isNotEmpty) {
-      for (var element in wayPoints) {
-        final point = Point(element);
-        this.wayPoints.add(point);
-      }
-    }
-
     final tracks = gpx.findAllElements("trk");
     if (tracks.isNotEmpty) {
       for (var element in tracks) {
@@ -179,17 +170,7 @@ abstract class GPXFile {
         _tracks.add(node);
       }
     }
-
-    final routes = gpx.findAllElements("rte");
-    if (routes.isNotEmpty) {
-      for (var element in routes) {
-        final node =
-            PointsCollection.fromXMLConstructor(element, pointTag: 'rtept');
-        _routes.add(node);
-      }
-    }
   }
-
 
   XmlElement _getFileRoot(io.File file) {
     final content = _file.readAsStringSync();
@@ -203,7 +184,6 @@ abstract class GPXFile {
     return rootNode;
   }
 
-  // This method extracts the meta data from the GPX file
   Metadata _getMetadata(XmlNode root) {
     final searchResult = root.findAllElements("metadata");
     if (searchResult.isNotEmpty) {
@@ -226,28 +206,6 @@ abstract class GPXFile {
         "GPX - Version $_version, Creator: $_creator (${_file.path})";
     root['nodes'] = [];
 
-    if (_wayPoints.isNotEmpty) {
-      final wayPoints = <String, dynamic>{};
-      wayPoints['label'] = "WayPoints (${_wayPoints.length})";
-      wayPoints['nodes'] = [];
-      final nodes = root['nodes'] as List<dynamic>;
-      nodes.add(wayPoints);
-    } else {
-      final nodes = root['nodes'] as List<dynamic>;
-      nodes.add("WayPoints (0)");
-    }
-
-    if (_routes.isNotEmpty) {
-      final routes = <String, dynamic>{};
-      routes['label'] = "Routes (${_routes.length})";
-      routes['nodes'] = [];
-      final nodes = root['nodes'] as List<dynamic>;
-      nodes.add(routes);
-    } else {
-      final nodes = root['nodes'] as List<dynamic>;
-      nodes.add("Routes (0)");
-    }
-
     if (_tracks.isNotEmpty) {
       final List<String> names = <String>[];
       for (var element in _tracks) {
@@ -269,22 +227,20 @@ abstract class GPXFile {
   }
 }
 
+/// This mixin holds code common to both splitting and merging a GPX file
 mixin GPXFileCommandSupport {
-  io.File getFileName(String name, io.File sourceFile, String outputFolder, {bool deleteExiting = false}) {
+  io.File getFileName (String name, io.File sourceFile, String outputFolder, {bool deleteExiting = false}){
     // Make sure the name can be used for a file name
     name = name.replaceAll(' ', '_').replaceAll('/', '_');
 
-    // Make sure the output folder exists
     final folder = io.Directory(outputFolder);
     folder.createSync(recursive: true);
 
-    // Construct the new file name
     final originalFileName = path.basenameWithoutExtension(sourceFile.path);
     final newFileName = "${originalFileName}_$name.gpx";
     final newFileQualifiedName = path.join(outputFolder, newFileName);
     final newFile = io.File(newFileQualifiedName);
 
-    // Delete if it already exits
     if (newFile.existsSync()) {
       if (deleteExiting) {
         newFile.delete();
@@ -297,7 +253,8 @@ mixin GPXFileCommandSupport {
   }
 }
 
-
+/// This class extends the GPXFile class by adding the ability to split track entries
+/// into individual files
 class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
   GPXSplitFileCommand(super._file);
 
@@ -342,7 +299,6 @@ class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
       var fileCount = 0;
 
       for (var track in tracks) {
-        // Create the file name
         String fileName = track.name;
         if (fileName == '<Unlabeled>') {
           fileName = (fileCount++).toString();
@@ -359,15 +315,14 @@ class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
   }
 }
 
+/// This class extends the GPXFile class by adding the ability to merge track entries
+/// and store them in a new file
 class GPXMergeFileCommand extends GPXFile with GPXFileCommandSupport {
   GPXMergeFileCommand(super._file);
 
   bool execute(String outputFolder, {bool deleteExiting = false}) {
-    // Build the file name
-    // TODO - had support for path dividers
     final outputFile = getFileName('merged', _file, outputFolder, deleteExiting: deleteExiting);
 
-    // Construct the xml content
     if (_tracks.isNotEmpty) {
       final builder = XmlBuilder();
       builder.processing(
@@ -416,7 +371,6 @@ class GPXMergeFileCommand extends GPXFile with GPXFileCommandSupport {
             });
           });
 
-      // Write the file
       final doc = builder.buildDocument();
       final content = doc.toXmlString(pretty: true);
       outputFile.writeAsStringSync(content);

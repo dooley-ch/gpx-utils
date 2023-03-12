@@ -12,8 +12,10 @@ import 'package:console/console.dart';
 import 'package:toml/toml.dart' as toml;
 import 'package:src/support.dart' as support;
 
+/// This variable holds a reverence to an instance of the [ConfigFile] class.
 final config = ConfigFile(support.getConfigFile(appName: 'gpxutils'));
 
+/// This class holds the theme colors used by the application
 class Theme {
   final int textColor;
   final int errorTextColor;
@@ -25,6 +27,7 @@ class Theme {
   String toString() => "Theme - textColor: $textColor, errorTextColor: $errorTextColor";
 }
 
+/// This class holds the runtime parameters used by the application
 class Runtime {
   final String outputFolder;
 
@@ -34,6 +37,7 @@ class Runtime {
   String toString() => "Runtime - outputFolder: $outputFolder";
 }
 
+/// This class holds the logging parameters used by the application
 class Logging {
   final int level;
 
@@ -43,6 +47,9 @@ class Logging {
   String toString() => "Logging - level: $level";
 }
 
+/// This class loads and publishes the configuration parameters used by the application
+///
+/// **Note:** The parameters are stored in the following location - /Users/[[user account]]/support_libs/config.toml
 class ConfigFile {
   final io.File _file;
   late Theme theme;

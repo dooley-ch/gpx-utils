@@ -15,6 +15,7 @@ import 'package:src/gpxfile.dart' as gpx;
 import 'package:src/configfile.dart';
 import 'package:src/version.dart';
 
+/// This class defines the commands supported by the application
 class CommandArguments {
   static const String mergeCommand = 'merge';
   static const String splitCommand = 'split';
@@ -26,9 +27,12 @@ class CommandArguments {
   static const String outputFolderOption = 'output';
 }
 
+/// This class provides code that is common to all three of the commands
 mixin CommandSupport {
+  /// This is the logger for all the commands
   final log = Logger('command-runner');
 
+  /// This method converts the [filePath] for the source file to a File object and checks that it exists
   io.File getSourceFile(String filePath) {
     final file = io.File(filePath);
 
@@ -40,6 +44,7 @@ mixin CommandSupport {
   }
 }
 
+/// This class implements the merge tracks command
 class MergeTracksCommand extends Command with CommandSupport {
   @override
   String get description => 'Merges all tracking sections into a single one in a new file';
@@ -74,6 +79,7 @@ class MergeTracksCommand extends Command with CommandSupport {
   }
 }
 
+/// This class implements the split tracks command
 class SplitTracksCommand extends Command with CommandSupport  {
   @override
   String get description => 'Splits all tracking sections into separate files';
@@ -108,6 +114,7 @@ class SplitTracksCommand extends Command with CommandSupport  {
   }
 }
 
+// This class implements the browse command
 class BrowseCommand extends Command with CommandSupport  {
   @override
   String get description => 'Prints the file structure';
@@ -138,6 +145,7 @@ class BrowseCommand extends Command with CommandSupport  {
   }
 }
 
+// This class implements the version command
 class VersionCommand extends Command with CommandSupport {
   @override
   String get description => 'Prints the application version number';

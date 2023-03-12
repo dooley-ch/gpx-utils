@@ -15,6 +15,9 @@ import 'package:src/configfile.dart';
 import 'package:src/commands.dart';
 import 'package:src/support.dart';
 
+/// This is the application entry point
+///
+/// **Note:** The configuration information is loaded as a result of importing the configfile package
 void main(List<String> params) async {
   Console.init();
   Console.setTextColor(config.theme.textColor);

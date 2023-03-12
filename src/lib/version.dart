@@ -9,4 +9,5 @@
 // *******************************************************************************************
 import 'package:version/version.dart';
 
-final appVersion = Version(1, 0, 1, preRelease: ["alpha"]);
+/// This variable holds a reference to the application version information
+final appVersion = Version(1, 0, 1);
