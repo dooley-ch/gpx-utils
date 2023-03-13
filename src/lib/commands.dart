@@ -7,8 +7,9 @@
 //  10-03-2023: Initial version
 //
 // *******************************************************************************************
-import 'dart:io' as io;
+import 'dart:io';
 import 'package:args/command_runner.dart';
+import 'package:console/console.dart';
 import 'package:logging/logging.dart';
 import 'configfile.dart';
 import 'exceptions.dart';
@@ -31,11 +32,11 @@ class CommandArguments {
 /// This class provides code that is common to all three of the commands
 mixin CommandSupport {
   /// This is the logger for all the commands
-  final log = Logger('command-runner');
+  final Logger log = Logger('command-runner');
 
   /// This method converts the [filePath] for the source file to a File object and checks that it exists
-  io.File getSourceFile(String filePath) {
-    final file = io.File(filePath);
+  File getSourceFile(String filePath) {
+    final File file = File(filePath);
 
     if (!file.existsSync()) {
       throw SourceFileNotFoundException('Source file not found', filePath);
@@ -61,8 +62,8 @@ class MergeTracksCommand extends Command with CommandSupport {
 
   @override
   void run() {
-    final sourceFileName = argResults![CommandArguments.fileOption] ?? '';
-    final deleteExisting = argResults![CommandArguments.deleteExistingFilesOption] ?? false;
+    final sourceFileName = argResults![CommandArguments.fileOption];
+    final deleteExisting = argResults![CommandArguments.deleteExistingFilesOption];
     final outputFolder = argResults![CommandArguments.outputFolderOption] ?? config.runtime.outputFolder;
 
     log.info("Merge Command - f: $sourceFileName, output: $outputFolder, delete: $deleteExisting");
@@ -72,7 +73,10 @@ class MergeTracksCommand extends Command with CommandSupport {
 
       final file = GPXMergeFileCommand(sourceFile);
       file.execute(outputFolder, deleteExiting: deleteExisting);
+
+      Console.setTextColor(config.theme.successTextColor);
       print('File merged successfully');
+      Console.setTextColor(config.theme.textColor);
     } catch (e) {
       log.severe("Failed to merge file: $e");
       rethrow;
@@ -96,8 +100,8 @@ class SplitTracksCommand extends Command with CommandSupport  {
 
   @override
   void run() {
-    final sourceFileName = argResults![CommandArguments.fileOption] ?? '';
-    final deleteExisting =  argResults![CommandArguments.deleteExistingFilesOption] ?? false;
+    final sourceFileName = argResults![CommandArguments.fileOption];
+    final deleteExisting =  argResults![CommandArguments.deleteExistingFilesOption];
     final outputFolder = argResults![CommandArguments.outputFolderOption] ?? config.runtime.outputFolder;
 
     log.info("Split Command - f: $sourceFileName, output: $outputFolder, delete: $deleteExisting");
@@ -107,7 +111,10 @@ class SplitTracksCommand extends Command with CommandSupport  {
 
       final file = GPXSplitFileCommand(sourceFile);
       file.execute(outputFolder, deleteExiting: deleteExisting);
+
+      Console.setTextColor(config.theme.successTextColor);
       print('File split successfully');
+      Console.setTextColor(config.theme.textColor);
     } catch (e) {
       log.severe("Failed to merge file: $e");
       rethrow;
@@ -129,7 +136,7 @@ class BrowseCommand extends Command with CommandSupport  {
 
   @override
   void run() {
-    final sourceFileName = argResults![CommandArguments.fileOption] ?? '';
+    final sourceFileName = argResults![CommandArguments.fileOption];
 
     log.info("Browse Command - f: $sourceFileName");
 

@@ -7,10 +7,10 @@
 //  02-03-2023: Initial version
 //
 // *******************************************************************************************
-import 'dart:io' as io;
+import 'dart:io';
 import 'package:console/console.dart';
 import 'package:xml/xml.dart';
-import 'package:path/path.dart' as path;
+import 'package:path/path.dart';
 import 'exceptions.dart';
 
 /// This class represents a point of a route or track map
@@ -140,7 +140,7 @@ class Metadata {
 
 /// This class holds the contents of a GPX source file
 abstract class GPXFile {
-  final io.File _file;
+  final File _file;
   late String _version;
   late String _creator;
   late Metadata _metadata;
@@ -172,7 +172,7 @@ abstract class GPXFile {
     }
   }
 
-  XmlElement _getFileRoot(io.File file) {
+  XmlElement _getFileRoot(File file) {
     final content = _file.readAsStringSync();
     final document = XmlDocument.parse(content);
     final rootNode = document.getElement("gpx");
@@ -229,17 +229,17 @@ abstract class GPXFile {
 
 /// This mixin holds code common to both splitting and merging a GPX file
 mixin GPXFileCommandSupport {
-  io.File getFileName (String name, io.File sourceFile, String outputFolder, {bool deleteExiting = false}){
+    File getFileName (String name, File sourceFile, String outputFolder, {bool deleteExiting = false}){
     // Make sure the name can be used for a file name
     name = name.replaceAll(' ', '_').replaceAll('/', '_');
 
-    final folder = io.Directory(outputFolder);
+    final folder = Directory(outputFolder);
     folder.createSync(recursive: true);
 
-    final originalFileName = path.basenameWithoutExtension(sourceFile.path);
+    final originalFileName = basenameWithoutExtension(sourceFile.path);
     final newFileName = "${originalFileName}_$name.gpx";
-    final newFileQualifiedName = path.join(outputFolder, newFileName);
-    final newFile = io.File(newFileQualifiedName);
+    final newFileQualifiedName = join(outputFolder, newFileName);
+    final newFile = File(newFileQualifiedName);
 
     if (newFile.existsSync()) {
       if (deleteExiting) {
@@ -258,7 +258,7 @@ mixin GPXFileCommandSupport {
 class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
   GPXSplitFileCommand(super._file);
 
-  void _exportFile(PointsCollection track, io.File outputFile) {
+  void _exportFile(PointsCollection track, File outputFile) {
     final builder = XmlBuilder();
     builder.processing('xml', 'version="1.0" encoding="UTF-8" standalone="yes"');
 
@@ -268,7 +268,7 @@ class GPXSplitFileCommand extends GPXFile with GPXFileCommandSupport {
           builder.element("metadata", nest: () {
             builder.element("name", nest: () { builder.text(track.name);});
             builder.element("time", nest: () { builder.text(DateTime.now().toIso8601String());});
-            builder.element("original-file", nest: () { builder.text(path.basename(_file.path));});
+            builder.element("original-file", nest: () { builder.text(basename(_file.path));});
           });
           builder.element("trk", nest: () {
             for (Point point in track.points) {
@@ -335,17 +335,17 @@ class GPXMergeFileCommand extends GPXFile with GPXFileCommandSupport {
           nest: () {
             builder.element("metadata", nest: () {
               builder.element("name", nest: () {
-                builder.text("merged: ${path.basename(_file.path)}");
+                builder.text("merged: ${basename(_file.path)}");
               });
               builder.element("time", nest: () {
                 builder.text(DateTime.now().toIso8601String());
               });
               builder.element("original-file", nest: () {
-                builder.text(path.basename(_file.path));
+                builder.text(basename(_file.path));
               });
             });
             builder.element("trk", nest: () {
-              builder.element("name", nest: () {builder.text("merged: ${path.basename(_file.path)}");});
+              builder.element("name", nest: () {builder.text("merged: ${basename(_file.path)}");});
               builder.element("trkseg", nest: () {
                 final firstPoint = _tracks[0].points[0];
                 builder.element("trkpt", attributes: {
